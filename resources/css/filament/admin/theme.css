@@ -1,0 +1,46 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/**/*';
+
+/* Numerical tabular alignment and report table styling */
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+.report-table th,
+.report-table td {
+    padding: 0.625rem 0.875rem;
+    vertical-align: middle;
+}
+
+.report-table tfoot tr {
+    font-weight: 600;
+}
+
+/* Print optimizations for A4 and 80mm POS receipts */
+@media print {
+    .no-print,
+    .fi-topbar,
+    .fi-sidebar,
+    .fi-header,
+    nav,
+    header,
+    aside {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .print-receipt-80mm {
+        width: 72mm !important;
+        max-width: 72mm !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        font-size: 11px !important;
+        line-height: 1.3 !important;
+    }
+}
