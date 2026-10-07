@@ -35,4 +35,26 @@ class InsufficientStockException extends DomainException
 
         parent::__construct($message);
     }
+
+    /**
+     * @return array<int, array{product: Product, requested: ?string, available: ?string}>
+     */
+    public function getShortages(): array
+    {
+        if (! empty($this->shortages)) {
+            return $this->shortages;
+        }
+
+        if ($this->product !== null) {
+            return [
+                [
+                    'product' => $this->product,
+                    'requested' => $this->requestedQty,
+                    'available' => $this->availableQty,
+                ],
+            ];
+        }
+
+        return [];
+    }
 }

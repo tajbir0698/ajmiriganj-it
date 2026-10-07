@@ -851,9 +851,12 @@ class PosScreen extends Component
             $shortages = $e->getShortages();
             $shortItems = [];
             foreach ($shortages as $s) {
-                $shortItems[] = "{$s['product']->name} (Req: {$s['requested']}, Avail: {$s['available']})";
+                $name = $s['product']->name ?? 'Product';
+                $shortItems[] = "{$name} (Req: {$s['requested']}, Avail: {$s['available']})";
             }
-            $this->errorMessage = 'Insufficient stock for: '.implode(', ', $shortItems);
+            $this->errorMessage = ! empty($shortItems)
+                ? 'Insufficient stock for: '.implode(', ', $shortItems)
+                : $e->getMessage();
 
             return ['success' => false, 'error' => $this->errorMessage, 'code' => 'insufficient_stock'];
         } catch (Exception $e) {

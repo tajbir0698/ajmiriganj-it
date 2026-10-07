@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\AccountKind;
 use App\Enums\BatchSource;
-use App\Enums\PaymentMethod;
 use App\Livewire\Pos\PosScreen;
+use App\Models\Account;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\PurchaseItem;
 use App\Models\Sale;
 use App\Models\Setting;
 use App\Models\Unit;
@@ -28,12 +30,19 @@ class PosPerformanceTest extends TestCase
     use RefreshDatabase;
 
     protected User $superAdmin;
+
     protected User $manager;
+
     protected Product $productA;
+
     protected Product $productB;
+
     protected Unit $unit;
+
     protected Category $category;
+
     protected FifoStockService $fifoStockService;
+
     protected SaleService $saleService;
 
     protected function setUp(): void
@@ -88,8 +97,8 @@ class PosPerformanceTest extends TestCase
         ]);
 
         // Default financial accounts & settings
-        $cashAccount = \App\Models\Account::firstOrCreate(['name' => 'Cash'], [
-            'type' => \App\Enums\AccountKind::CASH,
+        $cashAccount = Account::firstOrCreate(['name' => 'Cash'], [
+            'type' => AccountKind::CASH,
             'opening_balance' => '0.00',
             'is_active' => true,
         ]);
@@ -124,7 +133,7 @@ class PosPerformanceTest extends TestCase
                 // Assert allowed fields are present
                 expect($product)->toHaveKeys([
                     'id', 'name', 'sku', 'barcode', 'category', 'category_id',
-                    'unit', 'allow_fractional', 'sale_price', 'stock_qty', 'image'
+                    'unit', 'allow_fractional', 'sale_price', 'stock_qty', 'image',
                 ]);
 
                 // Assert forbidden cost fields are strictly absent
@@ -307,5 +316,40 @@ class PosPerformanceTest extends TestCase
         // Stock must NOT be deducted again
         $stockAfterRetry = $this->productA->fresh()->stock_qty;
         expect((string) $stockAfterRetry)->toBe('8.000');
+    }
+
+    /**
+     * Test 6: InsufficientStockException with shortages returns friendly error at POS checkout.
+     */
+    public function test_insufficient_stock_exception_shortages_are_properly_handled_at_pos_checkout(): void
+    {
+        // Reduce purchase item remaining_qty so FIFO service triggers shortage
+        PurchaseItem::where('product_id', $this->productA->id)->update(['remaining_qty' => '1.000']);
+        $this->productA->update(['stock_qty' => '10.000']); // Product table says 10, but batch only has 1
+
+        $payload = [
+            'items' => [
+                [
+                    'product_id' => $this->productA->id,
+                    'name' => $this->productA->name,
+                    'qty' => '5.000',
+                    'discount' => '0.00',
+                    'unit_price' => '1800.00',
+                ],
+            ],
+            'overall_discount' => '0.00',
+            'received_amount' => '9000.00',
+            'payment_method' => 'cash',
+            'idempotency_key' => (string) Str::uuid(),
+        ];
+
+        $component = Livewire::actingAs($this->manager)->test(PosScreen::class);
+        $result = $component->instance()->completeSale($payload);
+
+        expect($result['success'])->toBeFalse()
+            ->and($result['code'])->toBe('insufficient_stock')
+            ->and($result['error'])->toContain('Insufficient stock for:')
+            ->and($result['error'])->toContain($this->productA->name)
+            ->and($component->get('errorMessage'))->toContain('Insufficient stock for:');
     }
 }
