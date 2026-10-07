@@ -419,3 +419,10 @@ test('Manager dashboard HTML and Livewire snapshot contain no link to Dashboard 
         }
     }
 });
+
+test('sidebar accordion script hook is rendered on admin panel', function () {
+    $response = $this->actingAs($this->admin)->get('/admin');
+    $response->assertSuccessful();
+    $response->assertSee('initSidebarAccordion');
+    $response->assertSee('toggleCollapsedGroup');
+});
