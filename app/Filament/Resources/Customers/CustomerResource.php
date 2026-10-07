@@ -121,9 +121,10 @@ class CustomerResource extends Resource
                 TextColumn::make('current_due')
                     ->label('Current Due')
                     ->alignRight()
-                    ->state(fn (Customer $record): string => Money::format(app(CustomerAccountService::class)->getCurrentDue($record)))
+                    ->state(fn (Customer $record): string => app(CustomerAccountService::class)->getCurrentDue($record))
+                    ->formatStateUsing(fn ($state): string => Money::format((string) $state))
                     ->weight('bold')
-                    ->color(fn ($state): string => bccomp((string) $state, '৳ 0.00') > 0 ? 'danger' : 'gray'),
+                    ->color(fn ($state): string => bccomp((string) $state, '0.00', 2) > 0 ? 'danger' : 'gray'),
 
                 IconColumn::make('is_active')
                     ->label('Status')

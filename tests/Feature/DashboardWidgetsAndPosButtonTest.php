@@ -426,3 +426,22 @@ test('sidebar accordion script hook is rendered on admin panel', function () {
     $response->assertSee('initSidebarAccordion');
     $response->assertSee('toggleCollapsedGroup');
 });
+
+test('customers index page renders without bccomp ValueError on current_due column', function () {
+    \App\Models\Customer::create([
+        'name' => 'Zero Due Customer',
+        'opening_balance' => '0.00',
+        'is_active' => true,
+    ]);
+    \App\Models\Customer::create([
+        'name' => 'Positive Due Customer',
+        'opening_balance' => '150.00',
+        'is_active' => true,
+    ]);
+
+    $response = $this->actingAs($this->admin)->get('/admin/customers');
+    $response->assertSuccessful();
+    $response->assertSee('Zero Due Customer');
+    $response->assertSee('Positive Due Customer');
+    $response->assertSee('৳ 150.00');
+});
