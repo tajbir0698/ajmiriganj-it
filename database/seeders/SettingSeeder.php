@@ -40,6 +40,18 @@ class SettingSeeder extends Seeder
                 'description' => 'Allow credit / due sales with registered customers',
             ],
             [
+                'key' => 'site_title',
+                'value' => 'Ajmiriganj IT',
+                'type' => 'string',
+                'description' => 'Browser tab title and system branding title',
+            ],
+            [
+                'key' => 'favicon',
+                'value' => null,
+                'type' => 'string',
+                'description' => 'Custom browser favicon icon image (PNG, ICO, SVG)',
+            ],
+            [
                 'key' => 'shop_name',
                 'value' => 'Ajmiriganj IT',
                 'type' => 'string',

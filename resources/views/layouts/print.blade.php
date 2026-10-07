@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Report' }} - {{ \App\Models\Setting::get('shop_name', \App\Models\Setting::get('company_name', config('app.name', 'Ajmiriganj IT'))) }}</title>
+    <title>{{ $title ?? 'Report' }} - {{ \App\Models\Setting::get('site_title', \App\Models\Setting::get('shop_name', \App\Models\Setting::get('company_name', config('app.name', 'Ajmiriganj IT')))) }}</title>
+    @php
+        $faviconPath = \App\Models\Setting::get('favicon');
+        $faviconUrl = $faviconPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($faviconPath) : asset('favicon.ico');
+    @endphp
+    <link rel="icon" href="{{ $faviconUrl }}">
     <style>
         @page {
             @if(isset($format) && $format === '80mm')

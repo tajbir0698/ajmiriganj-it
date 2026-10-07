@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ \App\Models\Setting::get('shop_name', 'Ajmiriganj IT') }} - Point of Sale</title>
+    <title>{{ \App\Models\Setting::get('site_title') ?: \App\Models\Setting::get('shop_name', 'Ajmiriganj IT') }} - Point of Sale</title>
+    @php
+        $faviconPath = \App\Models\Setting::get('favicon');
+        $faviconUrl = $faviconPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($faviconPath) : asset('favicon.ico');
+    @endphp
+    <link rel="icon" href="{{ $faviconUrl }}">
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
